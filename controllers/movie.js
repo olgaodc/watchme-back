@@ -1,35 +1,27 @@
 const uniqid = require("uniqid");
 const MovieModel = require("../models/movie");
 const UserModel = require("../models/user");
-const jwt = require("jsonwebtoken")
 
 
 module.exports.ADD_MOVIE = async (req, res) => {
     try {
-        const token = req.headers.authorization;
-
-        jwt.verify(token, process.env.JWT_SECRET, async (err, decodedUserInformation) => {
-            if(err) {
-                return res.status(401).json({response: "Authorization failed"});
-            }
-
-            const movie = new MovieModel({
-                title: req.body.title,
-                contentText: req.body.contentText,
-                status: false,
-                id: uniqid(),
-                creationDate: new Date(),
-            })
-    
-            const createdMovie = await movie.save();
-    
-            UserModel.updateOne(
-                {id: req.body.userId},
-                {$push: {userMovies: createdMovie.id}}
-            ).exec();
-    
-            return res.status(200).json({response: "The movie was added successfully"});
+        const movie = new MovieModel({
+            title: req.body.title,
+            contentText: req.body.contentText,
+            status: false,
+            id: uniqid(),
+            creationDate: new Date(),
         })
+    
+        const createdMovie = await movie.save();
+    
+        UserModel.updateOne(
+            {id: req.body.userId},
+            {$push: {userMoviesIds: createdMovie.id}}
+        ).exec();
+    
+        return res.status(200).json({response: "The movie was added successfully"});
+
     } catch (err) {
         return res.status(500).json({response: "Error, please try later"});
     }

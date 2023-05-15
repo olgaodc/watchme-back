@@ -42,7 +42,7 @@ module.exports.ADD_USER = async (req, res) => {
                     password: hash,
                     email: req.body.email,
                     id: uniqid(),
-                    userMovies: [],
+                    userMoviesIds: [],
                 });
 
                 await user.save();
@@ -71,6 +71,26 @@ module.exports.GET_USER = async (req, res) => {
     try {
         const user = await UserModel.findOne({id: req.params.id});
         res.status(200).json({user: user});
+    } catch (err) {
+        console.log("Err:", err);
+        res.status(500).json({response: "Error, please try again"});
+    }
+}
+
+
+module.exports.GET_ALL_MOVIES_BY_USER_ID = async (req, res) => {
+    try {
+        const aggregatedUserData = await UserModel.aggregate([
+            {
+                $lookup: {
+                    from: "movies",
+                    localField: "userMoviesIds",
+                    foreignField: "id",
+                    as: "userMovies",
+                }
+            }, {$match: {id: req.body.userId}},
+        ]).exec();
+        return res.status(200).json({user: aggregatedUserData});
     } catch (err) {
         console.log("Err:", err);
         res.status(500).json({response: "Error, please try again"});
