@@ -7,6 +7,7 @@ module.exports.ADD_MOVIE = async (req, res) => {
     try {
         const movie = new MovieModel({
             title: req.body.title,
+            image: req.body.image,
             contentText: req.body.contentText,
             status: false,
             id: uniqid(),
@@ -50,52 +51,63 @@ module.exports.GET_MOVIE = async (req, res) => {
 }
 
 
-module.exports.EDIT_MOVIE_TITLE = async (req, res) => {
-    try {
-        const updateMovieTitle = await MovieModel.findOneAndUpdate(
-            {id: req.params.id},
-            {title: req.body.title}
-        );
-        res.status(200).json({movie: "Movie title was updated successfully"});
-    } catch (err) {
-        res.status(500).json({response: "Error, please try later"});
-    }
-}
+// module.exports.EDIT_MOVIE_TITLE = async (req, res) => {
+//     try {
+//         const updateMovieTitle = await MovieModel.findOneAndUpdate(
+//             {id: req.params.id},
+//             {title: req.body.title}
+//         );
+//         res.status(200).json({movie: "Movie title was updated successfully"});
+//     } catch (err) {
+//         res.status(500).json({response: "Error, please try later"});
+//     }
+// }
 
 
 module.exports.EDIT_MOVIE_CONTENT = async (req, res) => {
     try {
-        const updateMovieContent = await MovieModel.findOneAndUpdate(
+        const updatedMovie = await MovieModel.findOneAndUpdate(
             {id: req.params.id},
-            {contentText: req.body.contentText}
-        );
-        res.status(200).json({movie: "Movie content was updated successfully"});
-    } catch (err) {
-        res.status(500).json({response: "Error, please try later"});
-    }
-}
-
-
-module.exports.CHANGE_MOVIE_STATUS = async (req, res) => {
-    try {
-        const movie = await MovieModel.findOne({id: req.params.id});
-
-        const updateMovieStatus = await MovieModel.findOneAndUpdate(
-            {id: req.params.id},
-            {status: !movie.status},
+            {
+                title: req.body.title,
+                image: req.body.image,
+                contentText: req.body.contentText,
+                status: req.body.status,
+            },
             {new: true}
         );
-        res.status(200).json({movie: "Movie status was updated successfully"});
+
+        if (!updatedMovie) {
+            return res.status(404).json({ response: 'Movie not found' });
+        }
+
+        res.status(200).json({response: "Movie content was updated successfully", movie: updatedMovie});
     } catch (err) {
         res.status(500).json({response: "Error, please try later"});
     }
 }
+
+
+// module.exports.CHANGE_MOVIE_STATUS = async (req, res) => {
+//     try {
+//         const movie = await MovieModel.findOne({id: req.params.id});
+
+//         const updateMovieStatus = await MovieModel.findOneAndUpdate(
+//             {id: req.params.id},
+//             {status: !movie.status},
+//             {new: true}
+//         );
+//         res.status(200).json({movie: "Movie status was updated successfully"});
+//     } catch (err) {
+//         res.status(500).json({response: "Error, please try later"});
+//     }
+// }
 
 
 module.exports.DELETE_MOVIE = async (req, res) => {
     try {
         const movie = await MovieModel.findOneAndDelete({id: req.params.id});
-        res.status(200).json({response: "The movie was deleted successfully"});
+        res.status(200).json({response: "The movie was deleted successfully", movie: movie});
     } catch (err) {
         res.status(500).json({response: "Error, please try later"});
     }
